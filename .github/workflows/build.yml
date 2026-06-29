@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - test
-      - master
+      - main
     paths-ignore:
       - "README.md"
       - ".gitignore"
@@ -41,13 +41,13 @@ jobs:
           cache-dependency-path: community/go.sum
 
       - name: Set tag
-        if: github.ref_name == 'master'
+        if: github.ref_name == 'main'
         run: |
           DAILY_TAG=$(date +%Y%m%d%H%M)
           echo "DAILY_TAG=$DAILY_TAG" >> $GITHUB_ENV
 
       - name: Create Tag
-        if: github.ref_name == 'master'
+        if: github.ref_name == 'main'
         uses: actions/github-script@v8
         with:
           script: |
@@ -228,7 +228,7 @@ jobs:
           done
 
       - name: MASTER Prepare release directory and archives
-        if: github.ref_name == 'master'
+        if: github.ref_name == 'main'
         run: |
           set -euo pipefail
           rm -rf release
@@ -244,27 +244,27 @@ jobs:
           sha256sum release/geosite.dat > release/geosite.dat.sha256
 
       - name: MASTER Push to release branch and update master
-        if: github.ref_name == 'master'
+        if: github.ref_name == 'main'
         run: |
           cd release || exit 1
           git init
-          git config --local user.name "hydraponique"
-          git config --local user.email "hydraponique@users.noreply.github.com"
+          git config --local user.name "Javanyan"
+          git config --local user.email "javanyan@users.noreply.github.com"
           git checkout -b release
           git add -A
           git commit -m "Release ${{ env.DAILY_TAG }}"
           git remote add origin "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}"
           git push -f -u origin release
           cd .. || exit 1
-          git config --local user.name "hydraponique"
-          git config --local user.email "hydraponique@users.noreply.github.com"
-          git checkout master
+          git config --local user.name "Javanyan"
+          git config --local user.email "javanyan@users.noreply.github.com"
+          git checkout main
           git add release/
           git commit -m "Release ${{ env.DAILY_TAG }}" || echo "No changes to commit"
-          git push origin master
+          git push origin main
 
       - name: MASTER Publish GitHub Release
-        if: github.ref_name == 'master'
+        if: github.ref_name == 'main'
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ env.DAILY_TAG }}
@@ -277,7 +277,7 @@ jobs:
             release/*.tar.gz
 
       - name: MASTER Purge CDN for release and updated master branches
-        if: github.ref_name == 'master'
+        if: github.ref_name == 'main'
         run: |
           set -euo pipefail
           cd release || exit 1
@@ -305,16 +305,16 @@ jobs:
         run: |
           cd release || exit 1
           git init
-          git config --local user.name "hydraponique"
-          git config --local user.email "hydraponique@users.noreply.github.com"
+          git config --local user.name "Javanyan"
+          git config --local user.email "javanyan@users.noreply.github.com"
           git checkout -b test-release
           git add -A
           git commit -m "Test Release $(date -u +%Y%m%d%H%M)"
           git remote add origin "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}"
           git push -f -u origin test-release
           cd .. || exit 1
-          git config --local user.name "hydraponique"
-          git config --local user.email "hydraponique@users.noreply.github.com"
+          git config --local user.name "Javanyan"
+          git config --local user.email "javanyan@users.noreply.github.com"
           git checkout -B test
           git add release/
           git commit -m "Test Release $(date -u +%Y%m%d%H%M)" || echo "No changes to commit"
@@ -332,7 +332,7 @@ jobs:
           done
 
       - name: Trigger routing update
-        if: success() && github.ref_name == 'master'
+        if: success() && github.ref_name == 'main'
         uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.PAT_FOR_ROUTING }}
